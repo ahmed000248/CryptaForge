@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}CipherForge - Classical Cryptography Learning Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row align-items-center py-5">
+    <div class="col-lg-6 mb-4 mb-lg-0">
+        <h1 class="display-4 fw-bold mb-3">Learn & Experiment with <span class="text-primary">Classical Ciphers</span></h1>
+        <p class="lead text-muted mb-4">An interactive web platform designed for BS Computer Science students to explore, analyze, and build custom cryptographic algorithms. Visualize encryption steps in real time!</p>
+        <div class="d-flex gap-3">
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg btn-rounded">Go to Dashboard</a>
+                <a href="{{ url_for('about_page') }}" class="btn btn-outline-secondary btn-lg btn-rounded">Explore Algorithms</a>
+            {% else %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg btn-rounded">Get Started</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg btn-rounded">Sign In</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6 text-center">
+        <!-- Visual Cryptography Icon/Graphic using Bootstrap Icons -->
+        <div class="p-5 bg-primary bg-opacity-10 rounded-circle d-inline-block shadow-sm">
+            <i class="bi bi-shield-lock text-primary" style="font-size: 8rem;"></i>
+        </div>
+    </div>
+</div>
+
+<hr class="my-5">
+
+<!-- What is Cryptography Section -->
+<div class="row py-4" id="about">
+    <div class="col-lg-12">
+        <h2 class="fw-bold mb-3">What is Classical Cryptography?</h2>
+        <p class="lead text-muted">
+            Before the digital age of computer algorithms (like AES or RSA), secrets were protected using manual, paper-and-pencil methods called <strong>classical ciphers</strong>. These systems are broadly categorized into two types:
+        </p>
+        <div class="row mt-4">
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 p-4 border-0 bg-light">
+                    <h5 class="fw-bold text-primary"><i class="bi bi-shuffle me-2"></i> Substitution Ciphers</h5>
+                    <p class="text-muted mb-0">These ciphers replace letters of the plaintext with other letters, numbers, or symbols. Caesar, Playfair, Hill, and our Custom Alphabet builder fall under this category.</p>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 p-4 border-0 bg-light">
+                    <h5 class="fw-bold text-success"><i class="bi bi-grid-3x3-gap me-2"></i> Transposition Ciphers</h5>
+                    <p class="text-muted mb-0">Instead of replacing letters, transposition ciphers rearrange the order of letters according to a systematic grid, key, or path. Rail Fence and Columnar Transposition fall under this category.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="my-5">
+
+<!-- Key Features Section -->
+<div class="row py-4" id="features">
+    <div class="col-lg-12 text-center mb-5">
+        <h2 class="fw-bold">Interactive Learning Features</h2>
+        <p class="text-muted">A dedicated laboratory environment to learn cryptography step-by-step.</p>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-3 shadow-sm text-center">
+            <div class="card-body">
+                <div class="text-primary mb-3"><i class="bi bi-eye-fill fs-1"></i></div>
+                <h5 class="card-title fw-bold">Step-by-Step Visuals</h5>
+                <p class="card-text text-muted">Don't just get outputs! Understand exactly how each letter or block shifts, transforms in a matrix, or goes through grid transposition.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-3 shadow-sm text-center">
+            <div class="card-body">
+                <div class="text-success mb-3"><i class="bi bi-flask fs-1"></i></div>
+                <h5 class="card-title fw-bold">Custom Cipher Builder</h5>
+                <p class="card-text text-muted">Design, save, edit, and test your own monoalphabetic substitution alphabet mapping. Create, encrypt, decrypt, and manage your custom ciphers.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-3 shadow-sm text-center">
+            <div class="card-body">
+                <div class="text-info mb-3"><i class="bi bi-trophy-fill fs-1"></i></div>
+                <h5 class="card-title fw-bold">Educational Quizzes</h5>
+                <p class="card-text text-muted">Test your understanding of classical ciphers, key validation, and basic information security concepts with our built-in MCQ quiz module.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="my-5">
+
+<!-- Supported Algorithms Section -->
+<div class="row py-4" id="algorithms">
+    <div class="col-lg-12 text-center mb-5">
+        <h2 class="fw-bold">Implemented Algorithms</h2>
+        <p class="text-muted">A complete suite of classical algorithms with full decryption support.</p>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-3 border-start border-danger border-4">
+            <div class="card-body">
+                <span class="badge bg-danger mb-2">Very Weak</span>
+                <h5 class="fw-bold">Caesar Cipher</h5>
+                <p class="text-muted small">Shift letters by a numeric key index (0-25). Excellent starting point for basic shift mechanics.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-3 border-start border-warning border-4">
+            <div class="card-body">
+                <span class="badge bg-warning text-dark mb-2">Weak</span>
+                <h5 class="fw-bold">Playfair Cipher</h5>
+                <p class="text-muted small">Substitute character digraphs using a 5x5 key matrix. Protects against basic frequency analysis.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-3 border-start border-info border-4">
+            <div class="card-body">
+                <span class="badge bg-info text-dark mb-2">Moderate</span>
+                <h5 class="fw-bold">Hill Cipher</h5>
+                <p class="text-muted small">Encrypt blocks of text using matrix multiplication (2x2 key). Explains linear algebra applications.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-3 border-start border-info border-4">
+            <div class="card-body">
+                <span class="badge bg-info text-dark mb-2">Moderate</span>
+                <h5 class="fw-bold">Columnar Transposition</h5>
+                <p class="text-muted small">Permute character layout using key-based sorting of columns. Demonstrates spatial shuffling.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-3 border-start border-warning border-4">
+            <div class="card-body">
+                <span class="badge bg-warning text-dark mb-2">Weak</span>
+                <h5 class="fw-bold">Rail Fence Cipher</h5>
+                <p class="text-muted small">Write text diagonally across multiple 'rails' and read it horizontally. Visualizes pattern-based sorting.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-3 border-start border-secondary border-4">
+            <div class="card-body">
+                <span class="badge bg-secondary mb-2">Custom</span>
+                <h5 class="fw-bold">Custom Cipher</h5>
+                <p class="text-muted small">Construct your own alphabet permutation. Analyze substitution weaknesses through customization.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="my-5">
+
+<!-- Team Section Information -->
+<div class="row py-4 text-center">
+    <div class="col-lg-12 mb-5">
+        <h2 class="fw-bold">Academic Project Team</h2>
+        <p class="text-muted">Essentials of Information Security Semester Project</p>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 team-card shadow-sm border-0 bg-light p-4">
+            <div class="team-avatar">
+                <i class="bi bi-person-fill"></i>
+            </div>
+            <h5 class="fw-bold">BSCS Student</h5>
+            <p class="text-primary mb-1">Developer & Researcher</p>
+            <p class="text-muted small mb-0">Department of Computer Science</p>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 team-card shadow-sm border-0 bg-light p-4">
+            <div class="team-avatar">
+                <i class="bi bi-award-fill"></i>
+            </div>
+            <h5 class="fw-bold">Project Supervisor</h5>
+            <p class="text-primary mb-1">Information Security Instructor</p>
+            <p class="text-muted small mb-0">Senior Faculty Member</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

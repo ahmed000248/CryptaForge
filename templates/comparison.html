@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Cipher Comparison - CipherForge{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12 text-center text-md-start">
+        <h3 class="fw-bold mb-1"><i class="bi bi-arrow-left-right text-primary"></i> Algorithm Comparison</h3>
+        <p class="text-muted">Compare structural characteristics, security levels, and usage parameters of various classical ciphers.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="ps-4 py-3">Cipher Name</th>
+                                <th class="py-3">Cipher Type</th>
+                                <th class="py-3">Key Requirement</th>
+                                <th class="py-3">Security Level</th>
+                                <th class="py-3">Advantages</th>
+                                <th class="py-3">Disadvantages</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="ps-4"><strong>Caesar Cipher</strong></td>
+                                <td>Substitution (Monoalphabetic)</td>
+                                <td>Numeric Shift (0 - 25)</td>
+                                <td><span class="badge bg-danger">Very Weak</span></td>
+                                <td>Extremely simple to implement, fast, and easy to explain.</td>
+                                <td>Has only 25 possible keys. Highly vulnerable to brute force and frequency analysis.</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4"><strong>Playfair Cipher</strong></td>
+                                <td>Digraph Substitution</td>
+                                <td>Keyword (Generates 5x5 Matrix)</td>
+                                <td><span class="badge bg-warning text-dark">Weak</span></td>
+                                <td>Encrypts letter pairs; disrupts single-letter frequency analysis.</td>
+                                <td>Vulnerable to digraph frequency analysis; matrix size limit excludes 'J' (merged with 'I').</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4"><strong>Hill Cipher</strong></td>
+                                <td>Polygraphic Substitution</td>
+                                <td>2x2 Matrix (4 letters or numbers)</td>
+                                <td><span class="badge bg-info text-dark">Moderate</span></td>
+                                <td>Utilizes mathematical matrix multiplication; hides letter frequencies effectively across blocks.</td>
+                                <td>Key matrix must be invertible modulo 26. Susceptible to known-plaintext attacks using linear algebra.</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4"><strong>Columnar Transposition</strong></td>
+                                <td>Transposition (Permutation)</td>
+                                <td>Keyword (Determines column order)</td>
+                                <td><span class="badge bg-info text-dark">Moderate</span></td>
+                                <td>Shuffles the position of characters; keeps original letters but scrambles structure.</td>
+                                <td>Plaintext frequencies remain identical. Easily broken with anagramming techniques.</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4"><strong>Rail Fence Cipher</strong></td>
+                                <td>Transposition (Zig-Zag)</td>
+                                <td>Integer Rails (&ge; 2)</td>
+                                <td><span class="badge bg-warning text-dark">Weak</span></td>
+                                <td>Creates a highly visual zig-zag spatial pattern. Simple manual execution.</td>
+                                <td>No letter substitution; very few practical key options (rails). Easily deciphered by brute force.</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4"><strong>Custom Cipher</strong></td>
+                                <td>Substitution (Monoalphabetic)</td>
+                                <td>Custom 26-Letter Alphabet Map</td>
+                                <td><span class="badge bg-secondary">Variable</span></td>
+                                <td>Allows design of custom mappings; has a large key space (26! possible alphabets).</td>
+                                <td>Still uses monoalphabetic mapping. Highly vulnerable to standard letter-frequency analysis.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card bg-light border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="fw-bold mb-2"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Key Security Takeaway</h5>
+                <p class="text-muted mb-0">
+                    None of the classical ciphers are secure enough for modern digital communication. They are vulnerable to modern cryptanalysis, especially frequency analysis and mathematical analysis (Hill cipher). Modern cryptography uses computerized block ciphers (like AES) or asymmetric systems (like RSA or ECC) which operate on binary data (bits) and perform hundreds of rounds of complex substitutions and permutations.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}History - CipherForge{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12 d-flex justify-content-between align-items-center">
+        <h3 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary"></i> Lab Experiment History</h3>
+        <div>
+            <a href="{{ url_for('export_history') }}" class="btn btn-outline-success btn-rounded">
+                <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Export CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filters Card -->
+<div class="card shadow-sm border-0 mb-4 bg-light">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('history_page') }}" class="row g-3 align-items-end">
+            <!-- Search Query -->
+            <div class="col-md-4">
+                <label for="search" class="form-label small fw-semibold">Search Text</label>
+                <input type="text" class="form-control bg-white" id="search" name="search" value="{{ filters.search }}" placeholder="Search message or result...">
+            </div>
+            
+            <!-- Cipher Type Filter -->
+            <div class="col-md-2">
+                <label for="cipher_filter" class="form-label small fw-semibold">Cipher Type</label>
+                <select class="form-select bg-white" id="cipher_filter" name="cipher_type">
+                    <option value="">All Ciphers</option>
+                    <option value="caesar" {% if filters.cipher_type == 'caesar' %}selected{% endif %}>Caesar</option>
+                    <option value="playfair" {% if filters.cipher_type == 'playfair' %}selected{% endif %}>Playfair</option>
+                    <option value="hill" {% if filters.cipher_type == 'hill' %}selected{% endif %}>Hill</option>
+                    <option value="columnar" {% if filters.cipher_type == 'columnar' %}selected{% endif %}>Columnar</option>
+                    <option value="railfence" {% if filters.cipher_type == 'railfence' %}selected{% endif %}>Rail Fence</option>
+                    <option value="custom" {% if filters.cipher_type == 'custom' %}selected{% endif %}>Custom</option>
+                </select>
+            </div>
+            
+            <!-- Operation Filter -->
+            <div class="col-md-2">
+                <label for="op_filter" class="form-label small fw-semibold">Operation</label>
+                <select class="form-select bg-white" id="op_filter" name="operation">
+                    <option value="">All Operations</option>
+                    <option value="encrypt" {% if filters.operation == 'encrypt' %}selected{% endif %}>Encrypt</option>
+                    <option value="decrypt" {% if filters.operation == 'decrypt' %}selected{% endif %}>Decrypt</option>
+                </select>
+            </div>
+            
+            <!-- Date Filter -->
+            <div class="col-md-2">
+                <label for="date_filter" class="form-label small fw-semibold">Date</label>
+                <input type="date" class="form-control bg-white" id="date_filter" name="date" value="{{ filters.date }}">
+            </div>
+            
+            <!-- Buttons -->
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel-fill"></i> Filter</button>
+                <a href="{{ url_for('history_page') }}" class="btn btn-outline-secondary" title="Reset Filters"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- History Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        {% if records %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Cipher</th>
+                            <th>Operation</th>
+                            <th>Key</th>
+                            <th>Notes</th>
+                            <th>Input Message</th>
+                            <th>Output Result</th>
+                            <th>Execution Date</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in records %}
+                            <tr>
+                                <td class="ps-4 text-muted">#{{ r.id }}</td>
+                                <td>
+                                    <span class="fw-semibold text-dark">{{ r.cipher_type | capitalize }}</span>
+                                </td>
+                                <td>
+                                    {% if r.operation == 'encrypt' %}
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded">Encrypt</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded">Decrypt</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <code class="text-secondary" title="{{ r.cipher_key }}">{{ r.cipher_key | truncate(10) }}</code>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ r.notes or 'None' }}</span>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 150px;" title="{{ r.message }}">
+                                        <code>{{ r.message }}</code>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 150px;" title="{{ r.result }}">
+                                        <code>{{ r.result }}</code>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-inline-flex gap-2">
+                                        <a href="{{ url_for('download_result', record_id=r.id) }}" class="btn btn-sm btn-outline-primary" title="Download Text File">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                        <form method="POST" action="{{ url_for('delete_record', record_id=r.id) }}" onsubmit="return confirm('Are you sure you want to delete this record?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Record">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-journal-x fs-1 mb-2"></i>
+                <p class="mb-0">No matching history records found.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

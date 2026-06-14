@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}Decrypt Message - CipherForge{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Left Column: Form -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-success"><i class="bi bi-unlock-fill"></i> Decryption Lab</h5>
+                <span id="cipher-strength-badge" class="badge bg-secondary">Select Cipher</span>
+            </div>
+            <div class="card-body">
+                <form id="decrypt-form" action="{{ url_for('decrypt_page') }}" method="POST">
+                    
+                    <!-- Ciphertext Input -->
+                    <div class="mb-3">
+                        <label for="message" class="form-label fw-semibold">Ciphertext Message</label>
+                        <textarea class="form-control" id="message" name="message" rows="4" placeholder="Enter ciphertext to decrypt..." required>{{ form_data.get('message', '') }}</textarea>
+                    </div>
+                    
+                    <!-- Cipher Selection -->
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="cipher_select" class="form-label fw-semibold">Select Cipher Algorithm</label>
+                            <select class="form-select" id="cipher_select" name="cipher_type" required>
+                                <option value="caesar" {% if form_data.get('cipher_type') == 'caesar' %}selected{% endif %}>Caesar Cipher</option>
+                                <option value="playfair" {% if form_data.get('cipher_type') == 'playfair' %}selected{% endif %}>Playfair Cipher</option>
+                                <option value="hill" {% if form_data.get('cipher_type') == 'hill' %}selected{% endif %}>Hill Cipher</option>
+                                <option value="columnar" {% if form_data.get('cipher_type') == 'columnar' %}selected{% endif %}>Columnar Transposition Cipher</option>
+                                <option value="railfence" {% if form_data.get('cipher_type') == 'railfence' %}selected{% endif %}>Rail Fence Cipher</option>
+                                <option value="custom" {% if form_data.get('cipher_type') == 'custom' %}selected{% endif %}>Custom Substitution Cipher</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" name="mark_favorite" value="true" class="btn btn-outline-warning w-100 btn-rounded mt-2" title="Mark selected cipher as favorite">
+                                <i class="bi bi-star-fill"></i> Favorite
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Cipher Selection (dynamic) -->
+                    <div class="mb-3 d-none" id="custom_cipher_select_div">
+                        <label for="custom_cipher_id" class="form-label fw-semibold">Choose Your Custom Cipher</label>
+                        <select class="form-select" id="custom_cipher_id" name="custom_cipher_id">
+                            {% if custom_ciphers %}
+                                {% for c in custom_ciphers %}
+                                    <option value="{{ c.id }}" {% if form_data.get('custom_cipher_id')|int == c.id %}selected{% endif %}>{{ c.cipher_name }} ({{ c.custom_alphabet }})</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="" disabled>No custom ciphers found. Create one in the Custom Cipher Lab first.</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    
+                    <!-- Regular Key (dynamic) -->
+                    <div class="mb-3" id="regular_key_div">
+                        <label for="key_input" class="form-label fw-semibold">Cipher Key</label>
+                        <input type="text" class="form-control" id="key_input" name="key" value="{{ form_data.get('key', '') }}" required>
+                        <div class="form-text text-muted" id="key_help"></div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-4">
+                        <label for="notes" class="form-label fw-semibold">Operation Notes (Optional)</label>
+                        <select class="form-select" id="notes" name="notes">
+                            <option value="Testing" {% if form_data.get('notes') == 'Testing' %}selected{% endif %}>Testing</option>
+                            <option value="Assignment Task" {% if form_data.get('notes') == 'Assignment Task' %}selected{% endif %}>Assignment Task</option>
+                            <option value="Lab Work" {% if form_data.get('notes') == 'Lab Work' %}selected{% endif %}>Lab Work</option>
+                            <option value="Personal Study" {% if form_data.get('notes') == 'Personal Study' %}selected{% endif %}>Personal Study</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Buttons -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success text-white flex-grow-1 btn-rounded"><i class="bi bi-unlock-fill"></i> Decrypt</button>
+                        <button type="button" class="btn btn-outline-secondary btn-rounded" onclick="clearForm('decrypt-form')">Clear</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Result & Steps -->
+    <div class="col-lg-6">
+        <!-- Results Card -->
+        <div class="card shadow-sm border-0 mb-4 {% if not result %}d-none{% endif %}" id="result-card">
+            <div class="card-header bg-primary bg-opacity-10 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-primary"><i class="bi-check-circle-fill"></i> Decryption Result</h5>
+                <span class="badge bg-primary">Success</span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="result-text" class="form-label fw-semibold">Plaintext Output</label>
+                    <textarea class="form-control bg-light font-monospace text-dark" id="result-text" rows="4" readonly>{{ result }}</textarea>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary flex-grow-1" onclick="copyToClipboard('result-text', this)">
+                        <i class="bi bi-clipboard"></i> Copy Plaintext
+                    </button>
+                    {% if result %}
+                        <a href="{{ url_for('download_result', record_id=record_id) }}" class="btn btn-outline-primary flex-grow-1">
+                            <i class="bi bi-download"></i> Download Result
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Step-by-Step Visualization -->
+        <div class="card shadow-sm border-0 {% if not steps %}d-none{% endif %}">
+            <div class="card-header bg-transparent">
+                <h5 class="fw-bold mb-0"><i class="bi bi-eye"></i> Step-by-Step Decryption Visualization</h5>
+            </div>
+            <div class="card-body">
+                {% if steps %}
+                    {% if form_data.get('cipher_type') == 'caesar' or form_data.get('cipher_type') == 'custom' %}
+                        <!-- Linear Substitution Visualization -->
+                        <div class="list-group list-group-flush">
+                            {% for step in steps %}
+                                <div class="list-group-item px-0 step-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="fs-5 fw-bold text-muted">{{ step.char }}</span>
+                                            <i class="bi bi-arrow-right mx-2 text-primary"></i>
+                                            <span class="fs-5 fw-bold text-dark">{{ step.result }}</span>
+                                        </div>
+                                        <small class="text-muted">{{ step.op }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                    {% elif form_data.get('cipher_type') == 'playfair' %}
+                        <!-- Playfair Visualization -->
+                        {% for step in steps %}
+                            {% if step.type == 'matrix' %}
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-2">Key Matrix Used:</h6>
+                                    <div class="matrix-container">
+                                        {% for row in step.matrix %}
+                                            {% for cell in row %}
+                                                <div class="matrix-cell">{{ cell }}</div>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% elif step.type == 'pair' %}
+                                <div class="step-item mb-2">
+                                    <strong>Cipher digraph:</strong> <code class="fs-6">{{ step.input }}</code> 
+                                    <i class="bi bi-arrow-right mx-2 text-primary"></i> 
+                                    <strong>Plaintext:</strong> <code class="fs-6 text-success">{{ step.output }}</code>
+                                    <div class="small text-muted">{{ step.rule }} (Positions: {{ step.positions }})</div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                    {% elif form_data.get('cipher_type') == 'hill' %}
+                        <!-- Hill Cipher Visualization -->
+                        {% for step in steps %}
+                            {% if step.type == 'info' %}
+                                <div class="alert alert-info py-2 mb-3">
+                                    <pre class="mb-0 small" style="white-space: pre-wrap;">{{ step.message }}</pre>
+                                </div>
+                            {% elif step.type == 'vector' %}
+                                <div class="step-item mb-3">
+                                    <div><strong>Vector Input:</strong> <code>{{ step.input }}</code></div>
+                                    <div class="bg-light p-2 rounded font-monospace my-1" style="white-space: pre-line;">{{ step.calculation }}</div>
+                                    <div><strong>Vector Output:</strong> <code class="text-success">{{ step.output }}</code></div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                    {% elif form_data.get('cipher_type') == 'columnar' %}
+                        <!-- Columnar Transposition Visualization -->
+                        {% for step in steps %}
+                            {% if step.type == 'grid_reconstructed' %}
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-2">Reconstructed Grid:</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered text-center table-sm align-middle">
+                                            <thead>
+                                                <tr class="table-primary">
+                                                    {% for char in step.key %}
+                                                        <th>{{ char }}</th>
+                                                    {% endfor %}
+                                                </tr>
+                                                <tr class="table-light">
+                                                    {% for idx in step.col_order %}
+                                                        <th><small class="text-muted">Col {{ loop.index0 }} (Order: {{ step.col_order.index(loop.index0) + 1 }})</small></th>
+                                                    {% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for row in step.grid %}
+                                                    <tr>
+                                                        {% for cell in row %}
+                                                            <td><strong>{{ cell }}</strong></td>
+                                                        {% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="form-text text-muted">Decrypted plaintext is read row by row from the reconstructed grid above.</div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                    {% elif form_data.get('cipher_type') == 'railfence' %}
+                        <!-- Rail Fence Visualization -->
+                        {% for step in steps %}
+                            {% if step.type == 'zig_zag_reconstructed' %}
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-2">Reconstructed Zig-Zag Grid:</h6>
+                                    <div class="rail-grid-container">
+                                        <table class="rail-grid-table">
+                                            <tbody>
+                                                {% for r in range(step.rails) %}
+                                                    <tr>
+                                                        {% for c in range(step.length) %}
+                                                            {% set val = step.grid[r][c] %}
+                                                            <td class="rail-grid-cell {% if val != '.' %}active{% endif %}">
+                                                                {{ val if val != '.' else '' }}
+                                                            </td>
+                                                        {% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="form-text text-muted">Plaintext is extracted by traversing the grid in a zig-zag path.</div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted mb-0">Submit the form to see the decryption step breakdown.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rule Based Cipher Recommendation -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm bg-light">
+            <div class="card-body">
+                <h6 class="fw-bold text-dark"><i class="bi bi-info-circle-fill text-primary me-2"></i>Algorithm Recommendation Rule</h6>
+                <p class="mb-0 text-muted" id="cipher-recommendation-text">Please select a cipher in the form to see its specific application and characteristics.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Info Modals for each Cipher -->
+<!-- Caesar Info Modal -->
+<div class="modal fade" id="caesarInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Caesar Cipher</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Type:</strong> Substitution Cipher (Monoalphabetic)</p>
+                <p><strong>Security Level:</strong> Very Weak</p>
+                <p><strong>Description:</strong> Shifts each letter by a fixed numeric key (0-25). E.g., with a shift of 3, 'A' becomes 'D'. It is vulnerable to brute force and frequency analysis.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Playfair Info Modal -->
+<div class="modal fade" id="playfairInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Playfair Cipher</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Type:</strong> Digraph Substitution Cipher</p>
+                <p><strong>Security Level:</strong> Weak</p>
+                <p><strong>Description:</strong> Encrypts letter pairs (digraphs) in a 5x5 key matrix. Invented in 1854, it was used by British forces in WWI because it is much harder to break than single-letter ciphers.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hill Info Modal -->
+<div class="modal fade" id="hillInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Hill Cipher</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Type:</strong> Polygraphic Substitution Cipher</p>
+                <p><strong>Security Level:</strong> Moderate</p>
+                <p><strong>Description:</strong> Uses linear algebra to encrypt groups of letters using matrix multiplication. The key is a 2x2 matrix that must be invertible modulo 26 (i.e. gcd(det, 26) = 1).</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Columnar Info Modal -->
+<div class="modal fade" id="columnarInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Columnar Transposition</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Type:</strong> Transposition Cipher</p>
+                <p><strong>Security Level:</strong> Moderate</p>
+                <p><strong>Description:</strong> Writes the message row-by-row into a grid, then reads the columns in an alphabetical order dictated by a key keyword. Reorders the positions rather than replacing letters.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rail Fence Info Modal -->
+<div class="modal fade" id="railfenceInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Rail Fence Cipher</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Type:</strong> Transposition Cipher</p>
+                <p><strong>Security Level:</strong> Weak</p>
+                <p><strong>Description:</strong> Also called Zig-Zag cipher. Plaintext is written diagonally in a grid of 'rails' depth and then read out horizontally row-by-row. Very simple but very weak security.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

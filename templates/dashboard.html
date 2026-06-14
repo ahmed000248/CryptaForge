@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - CipherForge{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card bg-primary text-white border-0 overflow-hidden shadow-sm">
+            <div class="card-body p-4 p-md-5 position-relative">
+                <h2 class="display-6 fw-bold">Welcome, {{ session.get('fullname') }}!</h2>
+                <p class="lead mb-0">Explore the world of classical cryptography and information security through hands-on experiments.</p>
+                <div class="position-absolute end-0 bottom-0 opacity-10 d-none d-md-block" style="transform: translate(-10%, 10%);">
+                    <i class="bi bi-shield-lock-fill" style="font-size: 15rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4 g-3">
+    <div class="col-md-4 col-lg-2">
+        <div class="card h-100 border-0 shadow-sm bg-light">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-2 small fw-semibold">Total Records</h6>
+                <h3 class="fw-bold text-dark mb-0">{{ stats.total_records }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card h-100 border-0 shadow-sm border-start border-primary border-3">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-2 small fw-semibold">Encryptions</h6>
+                <h3 class="fw-bold text-primary mb-0">{{ stats.total_enc }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card h-100 border-0 shadow-sm border-start border-success border-3">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-2 small fw-semibold">Decryptions</h6>
+                <h3 class="fw-bold text-success mb-0">{{ stats.total_dec }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card h-100 border-0 shadow-sm bg-light">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-2 small fw-semibold">Custom Ciphers</h6>
+                <h3 class="fw-bold text-dark mb-0">{{ stats.total_custom }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card h-100 border-0 shadow-sm border-start border-warning border-3">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-2 small fw-semibold">Fav Cipher</h6>
+                <h5 class="fw-bold text-warning mb-0 text-truncate" title="{{ stats.favorite_cipher or 'None' }}">
+                    {{ stats.favorite_cipher or 'None' }}
+                </h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card h-100 border-0 shadow-sm bg-light">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-2 small fw-semibold">Most Used</h6>
+                <h5 class="fw-bold text-dark mb-0 text-truncate" title="{{ stats.most_used or 'None' }}">
+                    {{ stats.most_used or 'None' }}
+                </h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Quick Actions -->
+    <div class="col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-transparent border-0 pb-0">
+                <h5 class="fw-bold mb-0">Quick Laboratory Actions</h5>
+            </div>
+            <div class="card-body d-flex flex-column gap-3">
+                <a href="{{ url_for('encrypt_page') }}" class="btn btn-primary p-3 d-flex align-items-center justify-content-between rounded-3 text-start">
+                    <div>
+                        <h6 class="mb-1 fw-bold"><i class="bi bi-lock-fill me-2"></i> Encrypt Message</h6>
+                        <small class="opacity-75">Convert text using classical algorithms</small>
+                    </div>
+                    <i class="bi bi-chevron-right fs-4"></i>
+                </a>
+                <a href="{{ url_for('decrypt_page') }}" class="btn btn-success p-3 d-flex align-items-center justify-content-between rounded-3 text-start text-white">
+                    <div>
+                        <h6 class="mb-1 fw-bold"><i class="bi bi-unlock-fill me-2"></i> Decrypt Ciphertext</h6>
+                        <small class="opacity-75">Decrypt encoded letters back to original</small>
+                    </div>
+                    <i class="bi bi-chevron-right fs-4"></i>
+                </a>
+                <a href="{{ url_for('custom_cipher_lab') }}" class="btn btn-secondary p-3 d-flex align-items-center justify-content-between rounded-3 text-start">
+                    <div>
+                        <h6 class="mb-1 fw-bold"><i class="bi bi-flask-fill me-2"></i> Custom Cipher Lab</h6>
+                        <small class="opacity-75">Design custom alphabets & maps</small>
+                    </div>
+                    <i class="bi bi-chevron-right fs-4"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Table -->
+    <div class="col-lg-8">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header d-flex align-items-center justify-content-between bg-transparent">
+                <h5 class="fw-bold mb-0">Recent Activity</h5>
+                <a href="{{ url_for('history_page') }}" class="btn btn-sm btn-outline-primary btn-rounded">View All History</a>
+            </div>
+            <div class="card-body">
+                {% if recent_records %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Cipher</th>
+                                    <th>Operation</th>
+                                    <th>Input Snippet</th>
+                                    <th>Output Snippet</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in recent_records %}
+                                    <tr>
+                                        <td>
+                                            <span class="fw-semibold">{{ r.cipher_type | capitalize }}</span>
+                                        </td>
+                                        <td>
+                                            {% if r.operation == 'encrypt' %}
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded">Encrypt</span>
+                                            {% else %}
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded">Decrypt</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><code class="text-muted">{{ r.message | truncate(15) }}</code></td>
+                                        <td><code class="text-dark">{{ r.result | truncate(15) }}</code></td>
+                                        <td><small class="text-muted">{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</small></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-journal-x fs-1 mb-2"></i>
+                        <p class="mb-0">No encryption records found. Start by encrypting a message!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
