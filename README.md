@@ -116,9 +116,4 @@ The administrator account has access to the **Admin Control Panel** to view, fil
 
 ---
 
-## 📝 Viva / Oral Examination Explanations
-When demonstrating this project in a viva, be prepared to explain:
-1. **Modular Programming:** How each cipher is isolated inside the `ciphers/` directory, allowing clean modifications without breaking the application logic.
-2. **Coprime Condition (Hill Cipher):** Why the key matrix determinant must share no factors with 26 (`gcd(det, 26) = 1`) for the decryption matrix to exist.
-3. **Difference between Transposition & Substitution:** Caesar/Playfair/Hill substitute letters, whereas Columnar/Rail Fence reorganize them.
-4. **Hashed Passwords:** The security necessity of hashing passwords using Werkzeug `scrypt` instead of storing them as plain text.
+
